@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alpine Todolist</title>
+    <script src="./alpine.min.js" defer></script>
+    <style>
+      a {
+        color: red;
+      }
+      .finished {
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body
+    x-data="{
+      list: [],
+      id: 1,
+      input: '',
+      get todo() {
+        return this.list.filter(todo => !todo.finished)
+      },
+      get finished() {
+        return this.list.filter(todo => todo.finished)
+      },
+      init() {
+        if (localStorage.getItem('todolist')) {
+          this.list = JSON.parse(localStorage.getItem('todolist'))
+          this.id = this.list.at(-1)?.id ?? 0 + 1
+        }
+        this.$watch('list', list => {
+          localStorage.setItem('todolist', JSON.stringify(list))
+        })
+      },
+      addTodo() {
+        this.list.push({ id: this.id++, content: this.input, finished: false })
+        this.input = ''
+      },
+      removeTodo(id) {
+        const index = this.list.findIndex(item => item.id === id)
+        this.list.splice(index, 1)
+      }
+    }"
+  >
+    <header>
+      <h1>Todolist</h1>
+      <input type="text" x-model="input" />
+      <button @click="addTodo">Add todo</button>
+    </header>
+    <main>
+      <ul>
+        <template x-for="item in todo" :key="item.id">
+          <li>
+            <input type="checkbox" x-model="item.finished" />
+            <span x-text="`${item.id}. ${item.content}`"></span>
+            <a href="javascript:;" @click="removeTodo(item.id)">x</a>
+          </li>
+        </template>
+
+        <br />
+
+        <template x-for="item in finished" :key="item.id">
+          <li class="finished">
+            <input type="checkbox" x-model="item.finished" />
+            <span x-text="`${item.id}. ${item.content}`"></span>
+            <a href="javascript:;" @click="removeTodo(item.id)">x</a>
+          </li>
+        </template>
+      </ul>
+    </main>
+  </body>
+</html>
